@@ -1,208 +1,223 @@
-# Home Helper
+<div align="center">
 
-A React Native (Expo) mobile app for **shared household finance management**. Multiple users can join the same "house," then collaboratively log expenses, manage recurring bills, share a shopping list, and visualize spending — all synced in real time via Firebase.
+# 🏠 Home Helper
 
-Bilingual (English / Hebrew), dark-themed, and optimized for iOS and Android.
+### Shared household finance, beautifully simple.
 
----
+A cross-platform mobile app that helps roommates, couples, and families **manage money together** — track expenses, monitor budgets, share a shopping list, and visualize spending in real time.
 
-## Table of Contents
+[![Expo](https://img.shields.io/badge/Expo-SDK%2051-000020?style=flat-square&logo=expo)](https://expo.dev/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.74-61DAFB?style=flat-square&logo=react)](https://reactnative.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-10-FFCA28?style=flat-square&logo=firebase)](https://firebase.google.com/)
+[![iOS](https://img.shields.io/badge/iOS-supported-000?style=flat-square&logo=apple)]()
+[![Android](https://img.shields.io/badge/Android-supported-3DDC84?style=flat-square&logo=android)]()
 
-1. [What the App Does](#what-the-app-does)
-2. [Tech Stack](#tech-stack)
-3. [Architecture](#architecture)
-4. [Screens — Detailed Walkthrough](#screens--detailed-walkthrough)
-5. [Data Model (Firestore)](#data-model-firestore)
-6. [Global State (Contexts)](#global-state-contexts)
-7. [Component Library](#component-library)
-8. [Theming & Design System](#theming--design-system)
-9. [Internationalization (i18n)](#internationalization-i18n)
-10. [Hooks & Utilities](#hooks--utilities)
-11. [Project Structure](#project-structure)
-12. [Getting Started](#getting-started)
-13. [Scripts](#scripts)
-14. [Security Rules](#security-rules)
+</div>
 
 ---
 
-## What the App Does
+## ✨ Highlights
 
-Home Helper is built for households (roommates, couples, families) who want to **share the financial picture** of running a home. The core idea: every member sees the same expenses, the same recurring bills, and the same shopping list, in real time.
+> **One house, one financial picture.** Every member sees the same expenses, recurring bills, and shopping list — updated live.
 
-### Core capabilities
-
-- **Track variable expenses** — log purchases (food, transport, entertainment, etc.) with amount, category, description, optional note. Every entry remembers who recorded it.
-- **Manage fixed costs** — recurring monthly bills (rent, electricity, internet, subscriptions...) with a "day of month" charge date.
-- **Set monthly budgets** — per-category budgets with progress bars and over-budget warnings.
-- **Shared shopping list** — anyone in the house can add items, mark them done, and clear completed items.
-- **Visualize spending** — pie chart by category, monthly trend bars, per-member breakdown, stacked monthly view.
-- **Multi-user households** — create a house, get a 6-digit invite code, share it; new members instantly see all data.
-- **Bilingual UI** — switch between English and Hebrew at any time (persisted across launches).
-- **Dark mode** with a custom indigo/cyan accent palette.
+| | |
+| :---: | :--- |
+| 💸 | **Track expenses** by category — food, transport, entertainment, and more |
+| 📅 | **Recurring bills** with due-day reminders (rent, electricity, subscriptions…) |
+| 🎯 | **Per-category budgets** with progress bars and over-budget warnings |
+| 🛒 | **Shared shopping list** — anyone can add, check off, or clear items |
+| 📊 | **Beautiful charts** — pie, bar, and stacked monthly breakdowns |
+| 👥 | **Multi-user households** with a simple 6-digit invite code |
+| 🌐 | **Bilingual** — English & Hebrew (instant switching, persistent) |
+| 🌙 | **Dark mode** with a polished indigo / cyan palette |
+| ⚡ | **Real-time sync** via Firestore listeners — no refresh needed |
 
 ---
 
-## Tech Stack
+## 📚 Table of Contents
+
+- [✨ Highlights](#-highlights)
+- [🧰 Tech Stack](#-tech-stack)
+- [🏗️ Architecture](#️-architecture)
+- [📱 Screens — Detailed Walkthrough](#-screens--detailed-walkthrough)
+- [🗄️ Data Model (Firestore)](#️-data-model-firestore)
+- [🧠 Global State (Contexts)](#-global-state-contexts)
+- [🧩 Component Library](#-component-library)
+- [🎨 Theming & Design System](#-theming--design-system)
+- [🌐 Internationalization (i18n)](#-internationalization-i18n)
+- [🪝 Hooks & Utilities](#-hooks--utilities)
+- [📁 Project Structure](#-project-structure)
+- [🚀 Getting Started](#-getting-started)
+- [📜 Scripts](#-scripts)
+- [🔒 Security Rules](#-security-rules)
+
+---
+
+## 🧰 Tech Stack
 
 | Layer | Tech |
 | --- | --- |
-| Framework | **Expo SDK 51** + **React Native 0.74** |
-| Language | **TypeScript** |
-| Navigation | **expo-router** (file-based, typed routes) |
-| State | **React Context API** (3 global contexts) |
-| Backend | **Firebase** — Auth (email/password) + Firestore (real-time listeners) |
-| Local storage | `@react-native-async-storage/async-storage` (auth persistence + language pref) |
-| Animations | `react-native-reanimated` + `react-native-gesture-handler` |
-| Charts | `react-native-gifted-charts` |
-| Icons | `@expo/vector-icons` (Ionicons) |
-| Dates | `date-fns` |
+| 📦 **Framework** | Expo SDK 51 + React Native 0.74 |
+| 💎 **Language** | TypeScript |
+| 🧭 **Navigation** | expo-router (file-based, typed routes) |
+| 🧠 **State** | React Context API (3 global contexts) |
+| 🔥 **Backend** | Firebase — Auth (email/password) + Firestore (real-time) |
+| 💾 **Local storage** | `@react-native-async-storage/async-storage` |
+| 🎬 **Animations** | `react-native-reanimated` + `react-native-gesture-handler` |
+| 📈 **Charts** | `react-native-gifted-charts` |
+| 🎯 **Icons** | `@expo/vector-icons` (Ionicons) |
+| 📆 **Dates** | `date-fns` |
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  Expo Router (file-based)                                │
-│  ┌────────────────┐    ┌────────────────────────────┐    │
-│  │  (auth) group  │    │  (tabs) group + settings   │    │
-│  │  login         │    │  index (dashboard)         │    │
-│  │  register      │    │  expenses                  │    │
-│  │  house-setup   │    │  fixed-costs               │    │
-│  └────────────────┘    │  shopping                  │    │
-│         │              │  charts                    │    │
-│         │              │  settings (modal)          │    │
-│         │              └────────────────────────────┘    │
+│  🧭  Expo Router (file-based)                            │
+│                                                          │
+│   ┌────────────────┐    ┌────────────────────────────┐   │
+│   │  🔐 (auth)     │    │  📱 (tabs) + ⚙️ settings   │   │
+│   │  login         │    │  🏠 dashboard              │   │
+│   │  register      │    │  💸 expenses               │   │
+│   │  house-setup   │    │  📅 fixed-costs            │   │
+│   └────────────────┘    │  🛒 shopping               │   │
+│         │               │  📊 charts                 │   │
+│         │               └────────────────────────────┘   │
 │         │                          │                     │
 │         ▼                          ▼                     │
-│  ┌──────────────────────────────────────────────────┐    │
-│  │  Global Contexts                                 │    │
-│  │  AuthContext  HouseContext  LanguageContext      │    │
-│  └──────────────────────────────────────────────────┘    │
+│   ┌──────────────────────────────────────────────────┐   │
+│   │  🧠  Global Contexts                             │   │
+│   │  AuthContext  •  HouseContext  •  LanguageCtx    │   │
+│   └──────────────────────────────────────────────────┘   │
 │                          │                               │
 │                          ▼                               │
-│  ┌──────────────────────────────────────────────────┐    │
-│  │  Firebase (Auth + Firestore real-time)           │    │
-│  └──────────────────────────────────────────────────┘    │
+│   ┌──────────────────────────────────────────────────┐   │
+│   │  🔥  Firebase  —  Auth + Firestore (real-time)   │   │
+│   └──────────────────────────────────────────────────┘   │
 └──────────────────────────────────────────────────────────┘
 ```
 
-- **Routing gate:** `app/_layout.tsx` checks Auth state and `profile.houseId`. Unauthenticated → `(auth)/login`. Authenticated but no house → `(auth)/house-setup`. Otherwise → `(tabs)`.
-- **Real-time sync:** `HouseContext` attaches Firestore listeners on mount and tears them down on logout/house change. Every screen reads from context — no per-screen queries.
+> 🚦 **Routing gate:** `app/_layout.tsx` checks auth state & `profile.houseId`.
+> - Not signed in → `(auth)/login`
+> - Signed in but no house → `(auth)/house-setup`
+> - Otherwise → `(tabs)`
+
+> 🔁 **Real-time sync:** `HouseContext` attaches Firestore listeners on mount and tears them down on logout. Every screen reads from context — no per-screen queries.
 
 ---
 
-## Screens — Detailed Walkthrough
+## 📱 Screens — Detailed Walkthrough
 
-### Auth screens (`app/(auth)/`)
+### 🔐 Auth (`app/(auth)/`)
 
-#### 1. `login.tsx`
-- Email + password fields with validation.
-- Calls `AuthContext.login()` → Firebase `signInWithEmailAndPassword`.
-- Error feedback on invalid credentials.
-- Link to register screen.
+#### 🟢 `login.tsx`
+- Email + password fields with inline validation
+- Calls `AuthContext.login()` → Firebase `signInWithEmailAndPassword`
+- Friendly error feedback on invalid credentials
 
-#### 2. `register.tsx`
-- Full name, email, password (min 6 chars).
-- Creates user in Firebase Auth, then writes `users/{uid}` doc (`email`, `displayName`).
-- Routes to `house-setup` after success.
+#### 📝 `register.tsx`
+- Full name + email + password (min 6 chars)
+- Creates Firebase Auth user, writes `users/{uid}` doc
+- Routes to `house-setup` after success
 
-#### 3. `house-setup.tsx` — three-mode flow
-- **Pick mode:** "Create new home" or "Join existing home".
-- **Create mode:**
-  - Enter home name, generates a random **6-digit code**.
-  - Writes `houses/{houseId}` with `name`, `code`, `memberIds: [uid]`, `members: [{ uid, name }]`, `createdAt`.
-  - Patches `users/{uid}` with the new `houseId`.
-  - Shows success screen with the shareable code for 2.5s before redirecting.
-- **Join mode:**
-  - Enter a 6-digit code.
-  - Queries `houses` for a matching code; if found, appends current user to `memberIds` and `members`, sets the user's `houseId`.
-- Gate: this screen only appears if the authenticated user has no `houseId`.
-
-### Tab screens (`app/(tabs)/`)
-
-#### 1. Dashboard (`index.tsx`)
-The home screen — at-a-glance view of the household's financial month.
-- **Greeting header** ("Hello, [name]") + settings button.
-- **Hero total** — combined spend this month (variable + fixed), split into the two components.
-- **4 stat tiles** — Monthly total, Variable (this month), Fixed (recurring), Average per expense.
-- **Members list** — all household members with their personal spend this month.
-- **Upcoming charges** — fixed costs due in the next 7 days (uses `daysUntil(dayOfMonth)` logic), labeled "Today", "Tomorrow", "In N days".
-- **Budget tracker** — `BudgetCard` showing each tracked category with progress bar; warning when ≥ 80%, danger when over.
-- **Recent expenses** — last 5 entries from the current month, with a "See all" link.
-
-#### 2. Expenses (`expenses.tsx`)
-The detailed expense log + add/edit interface.
-- **Month selector** — horizontal scroll of the last 12 months; filters by `monthKey` (`yyyy-MM`).
-- **Search bar** — filters by description, note, or member name.
-- **Category chips** — "All" + 8 category filters.
-- **List** — ordered by date desc; each row shows category icon, description, amount, member name, timestamp.
-- **Tap to edit / long-press to delete** (with confirmation alert).
-- **Add modal** — fields: description (required), amount (must be > 0), category (picker), optional note. On save: stamps `monthKey`, `userId`, `userName`, `date` (server timestamp).
-- **Edit modal** — updates description / amount / category / note; preserves the original month and author.
-
-#### 3. Fixed Costs (`fixed-costs.tsx`)
-Recurring monthly bills.
-- **Totals** — monthly total + yearly projection (×12).
-- **List** — each item shows type-specific icon and color, name, amount, "Day N of month".
-- **Add / Edit modal** — `type` (rent, mortgage, electricity, water, internet, gas, insurance, subscription, other), `amount`, `dayOfMonth` (1–31, validated).
-- **Delete** with confirmation.
-- Items are subscription-style: they do not need to be re-entered each month; the dashboard projects them automatically.
-
-#### 4. Shopping (`shopping.tsx`)
-Shared shopping list.
-- **Header counts** — "X pending" + "Y done" badges.
-- **Add row** — name + quantity inputs; new items default to `checked: false`, stamped with `addedBy` (the user's name) and `addedAt`.
-- **Pending list** — animated rows; tap the checkbox to mark done (writes `checked: true`).
-- **Completed section** — shows checked items; **"Clear"** button bulk-deletes everything that's checked.
-
-#### 5. Charts (`charts.tsx`)
-Spending visualizations powered by `react-native-gifted-charts`.
-- **By category (pie chart)** — current month variable expenses, one slice per non-zero category.
-- **Monthly trend (bar chart)** — last 6 months of variable expenses; active month highlighted.
-- **Monthly breakdown (stacked bar)** — last 6 months with each member's contribution stacked.
-- **By member (bar chart)** — current month total per household member.
-- Empty state if there are no expenses in the lookback window.
-
-### Settings modal (`app/settings.tsx`)
-
-Presented as a modal from any tab.
-- **Profile card** — avatar (initial), name, email.
-- **My home** — house name + invite code; "Share" button opens the native share sheet pre-filled with the code.
-- **House members** — list of all members.
-- **Monthly budget** — 8 category rows. Tap a row → modal to set a ₪ amount (or 0 to remove). Writes to `houses/{houseId}/settings/budgets` as a partial merge; removals use `deleteField()`.
-- **Language** — English / Hebrew radio; switching is immediate (no restart) and persists to AsyncStorage.
-- **Account** — Sign out (with confirmation alert).
+#### 🏠 `house-setup.tsx` — three-mode flow
+- 🎯 **Pick:** "Create new home" or "Join existing home"
+- 🆕 **Create:** name the home → generates a random **6-digit invite code** → writes `houses/{houseId}` with `name`, `code`, `memberIds`, `members`, `createdAt`
+- 🤝 **Join:** enter a 6-digit code → query for house → append user to `memberIds` + `members`
+- 🚧 Gate: only appears when the user has no `houseId`
 
 ---
 
-## Data Model (Firestore)
+### 📱 Tabs (`app/(tabs)/`)
 
-### Top-level collections
+#### 🏠 1. Dashboard (`index.tsx`)
+At-a-glance view of the household's financial month.
 
-#### `users/{uid}`
+| Section | What it shows |
+| --- | --- |
+| 👋 Greeting | "Hello, [name]" + settings button |
+| 💰 Hero total | Combined spend this month (variable + fixed) |
+| 📊 4 stat tiles | Monthly · Variable · Fixed · Avg per expense |
+| 👥 Members | Each member with their personal monthly spend |
+| ⏰ Upcoming charges | Fixed costs due in the next 7 days ("Today", "Tomorrow", "In N days") |
+| 🎯 Budget tracker | Per-category progress bars (amber at 80%, red over) |
+| 🕒 Recent | Last 5 expenses + "See all" link |
+
+#### 💸 2. Expenses (`expenses.tsx`)
+- 📅 **Month selector** — horizontal scroll, last 12 months
+- 🔍 **Search bar** — by description, note, or member name
+- 🏷️ **Category chips** — All + 8 category filters
+- 📝 **List** — ordered by date desc; tap to edit, long-press to delete
+- ➕ **Add modal** — description (required), amount (> 0), category, optional note. Auto-stamps `monthKey`, `userId`, `userName`, server timestamp.
+- ✏️ **Edit modal** — preserves original month & author
+
+#### 📅 3. Fixed Costs (`fixed-costs.tsx`)
+- 💵 **Totals** — monthly + yearly projection (×12)
+- 🧾 **List** — type-specific icon + color, name, amount, "Day N of month"
+- ➕ **Add / Edit** — `type` (rent / mortgage / electricity / water / internet / gas / insurance / subscription / other), `amount`, `dayOfMonth` (1–31)
+- 🗑️ **Delete** with confirmation
+- ♾️ Items are subscription-style — set once, projected automatically
+
+#### 🛒 4. Shopping (`shopping.tsx`)
+- 🏷️ **Header badges** — "X pending" + "Y done"
+- ➕ **Add row** — name + quantity → stamped with `addedBy` + `addedAt`
+- 📋 **Pending list** — tap checkbox to mark done
+- ✅ **Completed section** — "Clear" button bulk-deletes checked items
+
+#### 📊 5. Charts (`charts.tsx`)
+Visualizations powered by `react-native-gifted-charts`:
+
+| Chart | What it shows |
+| --- | --- |
+| 🥧 **Pie** | Current month spending by category |
+| 📊 **Bar** | Last 6 months trend (variable expenses) |
+| 🏗️ **Stacked bar** | Last 6 months with each member's contribution stacked |
+| 👤 **Bar** | Current month total per household member |
+
+---
+
+### ⚙️ Settings modal (`app/settings.tsx`)
+
+| Section | What it does |
+| --- | --- |
+| 👤 **Profile** | Avatar + name + email |
+| 🏠 **My home** | House name + invite code + native Share button |
+| 👥 **Members** | List of all household members |
+| 🎯 **Monthly budget** | 8 category rows — tap to set ₪ amount (0 = remove) |
+| 🌐 **Language** | English / Hebrew radio — instant switch, persisted |
+| 🚪 **Account** | Sign out (with confirmation) |
+
+---
+
+## 🗄️ Data Model (Firestore)
+
+### 🌳 Top-level collections
+
+#### 👤 `users/{uid}`
 ```ts
 {
   email: string
   displayName: string
-  houseId?: string   // set after house create/join
+  houseId?: string   // set after house create / join
 }
 ```
 
-#### `houses/{houseId}`
+#### 🏠 `houses/{houseId}`
 ```ts
 {
   name: string
-  code: string                          // 6 digits, used to invite
-  memberIds: string[]                   // for security-rule membership checks
-  members: { uid: string; name: string }[]   // parallel array for display
+  code: string                                  // 6 digits, used to invite
+  memberIds: string[]                           // for security-rule checks
+  members: { uid: string; name: string }[]      // parallel array for display
   createdAt: Timestamp
 }
 ```
 
-### House subcollections
+### 📂 House subcollections
 
-#### `houses/{houseId}/expenses/{expenseId}`
+#### 💸 `houses/{houseId}/expenses/{expenseId}`
 ```ts
 {
   userId: string
@@ -212,12 +227,12 @@ Presented as a modal from any tab.
   category: 'food' | 'transport' | 'entertainment' | 'health'
           | 'clothing' | 'home' | 'education' | 'other'
   note?: string
-  monthKey: string         // 'yyyy-MM' — used for fast month filtering
-  date: Timestamp          // server timestamp, used for sorting
+  monthKey: string         // 'yyyy-MM' — fast month filtering
+  date: Timestamp          // server timestamp, for sorting
 }
 ```
 
-#### `houses/{houseId}/fixedCosts/{fixedCostId}`
+#### 📅 `houses/{houseId}/fixedCosts/{fixedCostId}`
 ```ts
 {
   name: string             // e.g. "Rent", "Spotify"
@@ -228,19 +243,19 @@ Presented as a modal from any tab.
 }
 ```
 
-#### `houses/{houseId}/shopping/{itemId}`
+#### 🛒 `houses/{houseId}/shopping/{itemId}`
 ```ts
 {
   name: string
-  qty: string              // free-text quantity/unit
+  qty: string              // free-text quantity / unit
   checked: boolean
   addedBy: string          // display name
   addedAt: Timestamp
 }
 ```
 
-#### `houses/{houseId}/settings/budgets`
-A single document holding per-category limits:
+#### 🎯 `houses/{houseId}/settings/budgets`
+A single document — one optional field per category:
 ```ts
 {
   food?: number
@@ -248,160 +263,213 @@ A single document holding per-category limits:
   // ... one optional field per category
 }
 ```
-Updated with `setDoc(ref, { [category]: amount }, { merge: true })`; removed with `updateDoc(ref, { [category]: deleteField() })`.
+> 💡 Updated with `setDoc(ref, { [category]: amount }, { merge: true })`; removed with `updateDoc(ref, { [category]: deleteField() })`.
 
 ---
 
-## Global State (Contexts)
+## 🧠 Global State (Contexts)
 
-All app state is exposed via three context providers, wired up in `app/_layout.tsx`.
+All app state lives in three context providers, wired up in `app/_layout.tsx`.
 
-### `AuthContext` (`context/AuthContext.tsx`)
+### 🔐 `AuthContext` — `context/AuthContext.tsx`
 Subscribes to Firebase `onAuthStateChanged` and auto-loads the `UserProfile`.
-- **State:** `user` (Firebase User), `profile` (UserProfile), `loading`.
-- **Actions:** `login(email, password)`, `register(email, password, name)`, `logout()`, `refreshProfile()` (re-reads after house setup).
 
-### `HouseContext` (`context/HouseContext.tsx`)
-Attaches real-time Firestore listeners on the user's house and all its subcollections. Tears them down when `profile.houseId` changes.
-- **State:** `house`, `expenses[]`, `fixedCosts[]`, `shoppingItems[]`, `budgets`, `loadingHouse`.
-- **Expense actions:** `addExpense(input)`, `updateExpense(id, input)`, `deleteExpense(id)`.
-- **Fixed-cost actions:** `addFixedCost(input)`, `updateFixedCost(id, input)`, `deleteFixedCost(id)`.
-- **Shopping actions:** `addShoppingItem(name, qty)`, `toggleShoppingItem(id, checked)`, `clearCheckedItems()`.
-- **Budget actions:** `setBudget(category, amount)`, `removeBudget(category)`.
-
-### `LanguageContext` (`context/LanguageContext.tsx`)
-- Loads the user's language preference from AsyncStorage on mount.
-- **State:** `lang` (`'en' | 'he'`), `ready`, `isRTL`.
-- **Actions:** `setLanguage(lang)`, `t(key, vars?)` — translation lookup with variable interpolation.
-- Hebrew renders RTL via Unicode bidi, without calling `I18nManager.forceRTL()` (so layouts stay LTR).
-
----
-
-## Component Library (`components/`)
-
-| Component | Purpose |
+| | |
 | --- | --- |
-| `Button.tsx` | Primary / secondary / ghost / danger variants, sm/md/lg sizes, icon + label, loading state. |
-| `Card.tsx` | Surface container — variants: default, elevated, flat, outline, inset. Optional pressable. |
-| `Input.tsx` | Labeled text input with optional icon, focused/error states, helper text. |
-| `BudgetCard.tsx` | Renders per-category budget rows with progress bars; color shifts to amber/red as usage rises. |
-| `IconButton.tsx` | 44px-touch-target icon button with spring scale animation. Variants: subtle, plain, solid, danger. |
-| `EmptyState.tsx` | Centered icon + title + description + optional action, for empty lists. |
-| `SectionHeader.tsx` | Title + hint + optional action — used above each dashboard section. |
-| `AnimatedTabBar.tsx` | Custom bottom tab bar with animated indicator. Used by `(tabs)/_layout.tsx`. |
-| `AnimatedPressable.tsx` | Pressable with reanimated spring scale on press, for list rows. |
-| `ScreenTransition.tsx` | Wraps screen content in a fade-in animation. |
+| **State** | `user`, `profile`, `loading` |
+| **Actions** | `login`, `register`, `logout`, `refreshProfile` |
+
+### 🏠 `HouseContext` — `context/HouseContext.tsx`
+Real-time Firestore listeners on the user's house and all subcollections.
+
+| | |
+| --- | --- |
+| **State** | `house`, `expenses[]`, `fixedCosts[]`, `shoppingItems[]`, `budgets`, `loadingHouse` |
+| **💸 Expenses** | `addExpense`, `updateExpense`, `deleteExpense` |
+| **📅 Fixed costs** | `addFixedCost`, `updateFixedCost`, `deleteFixedCost` |
+| **🛒 Shopping** | `addShoppingItem`, `toggleShoppingItem`, `clearCheckedItems` |
+| **🎯 Budgets** | `setBudget`, `removeBudget` |
+
+### 🌐 `LanguageContext` — `context/LanguageContext.tsx`
+Loads & persists the user's language preference.
+
+| | |
+| --- | --- |
+| **State** | `lang` (`'en' \| 'he'`), `ready`, `isRTL` |
+| **Actions** | `setLanguage(lang)`, `t(key, vars?)` |
+
+> 📝 Hebrew renders RTL via Unicode bidi — `I18nManager.forceRTL()` is **not** called, so layouts stay LTR.
 
 ---
 
-## Theming & Design System
+## 🧩 Component Library
+
+Reusable UI primitives in `components/`:
+
+| 🧱 Component | Purpose |
+| --- | --- |
+| 🔘 `Button.tsx` | Primary / secondary / ghost / danger variants · sm/md/lg sizes · icon + label · loading state |
+| 📇 `Card.tsx` | Surface container — variants: default, elevated, flat, outline, inset. Optional pressable |
+| 📝 `Input.tsx` | Labeled text input · optional icon · focus/error states · helper text |
+| 🎯 `BudgetCard.tsx` | Per-category budget rows with progress bars; amber/red as usage rises |
+| ⭕ `IconButton.tsx` | 44px touch target · spring scale animation · subtle/plain/solid/danger |
+| 🌫️ `EmptyState.tsx` | Centered icon + title + description + optional action |
+| 📑 `SectionHeader.tsx` | Title + hint + optional action — used above dashboard sections |
+| 🎬 `AnimatedTabBar.tsx` | Custom bottom tab bar with animated indicator |
+| 👆 `AnimatedPressable.tsx` | Pressable with reanimated spring scale on press |
+| ✨ `ScreenTransition.tsx` | Wraps screen content in a fade-in animation |
+
+---
+
+## 🎨 Theming & Design System
 
 Defined in `constants/colors.ts` and `constants/theme.ts`.
 
-### Colors
+### 🌈 Colors
 
-- **Backgrounds:** `bg`, `bgElevated`, `card`, `cardAlt`, `surface` — layered from deepest to highest.
-- **Brand:** `primary` (#818cf8 indigo), `accent` (#22d3ee cyan).
-- **Text:** `text`, `textSecondary`, `textMuted`, `textSubtle`.
-- **Semantic:** `success`, `danger`, `warning`, `info`.
-- **Categories:** each of the 8 expense categories has its own color, label, and Ionicon (`CATEGORY_COLORS`, `CATEGORY_LABELS`, `CATEGORY_ICONS`).
+<table>
+<tr><td>
 
-### Typography
-Tokens in `TYPE`: `hero`, `display`, `h1`, `h2`, `h3`, `body`, `bodyStrong`, `caption`, `micro`, `overline`.
+**Backgrounds** (deepest → highest)
+```
+bg          #080b14
+bgElevated  #0e1120
+card        #141828
+cardAlt     #1c2236
+surface     #242b42
+```
 
-### Spacing
-4-pt grid: `xs` 4 · `sm` 8 · `md` 12 · `lg` 16 · `xl` 20 · `2xl` 24 · `3xl` 32 · `4xl` 48.
+</td><td>
 
-### Radius
-`xs` 6 · `sm` 10 · `md` 14 · `lg` 20 · `xl` 28 · `2xl` 36 · `pill` 999.
+**Brand & accent**
+```
+primary  #818cf8  (indigo)
+accent   #22d3ee  (cyan)
+```
 
-### Shadows
-`xs`, `sm`, `md`, `lg` elevation tiers + a `glow` shadow used on primary buttons.
+**Text hierarchy**
+```
+text          #f0f2ff
+textSecondary #9aa0bc
+textMuted     #5d6580
+textSubtle    #3e4463
+```
+
+</td><td>
+
+**Semantic**
+```
+✅ success  #34d399
+❌ danger   #f87171
+⚠️  warning #fbbf24
+ℹ️  info    #60a5fa
+```
+
+</td></tr>
+</table>
+
+> 🏷️ Each of the **8 expense categories** has its own color, label, and Ionicon (`CATEGORY_COLORS`, `CATEGORY_LABELS`, `CATEGORY_ICONS`).
+
+### 🔤 Typography (`TYPE` tokens)
+`hero` · `display` · `h1` · `h2` · `h3` · `body` · `bodyStrong` · `caption` · `micro` · `overline`
+
+### 📏 Spacing — 4-pt grid
+`xs` 4 · `sm` 8 · `md` 12 · `lg` 16 · `xl` 20 · `2xl` 24 · `3xl` 32 · `4xl` 48
+
+### 🟦 Radius
+`xs` 6 · `sm` 10 · `md` 14 · `lg` 20 · `xl` 28 · `2xl` 36 · `pill` 999
+
+### 🌑 Shadows
+`xs` · `sm` · `md` · `lg` elevation tiers + a `glow` shadow used on primary buttons
 
 ---
 
-## Internationalization (i18n)
+## 🌐 Internationalization (i18n)
 
-`lib/i18n.ts` defines a `TRANSLATIONS` map with English and Hebrew strings, grouped into sections:
+`lib/i18n.ts` defines a `TRANSLATIONS` map with English & Hebrew strings, grouped into namespaces:
 
-- `common` — Cancel, Save, Delete, Edit, Loading, Total, Add, etc.
-- `auth` — login/register field labels and errors.
-- `house` — setup flow strings, invite code messaging.
-- `tabs` — tab names.
-- `expenses`, `categories`, `charts`, `settings`, `shopping`, `fixed`, `fixedTypes`, `dashboard` — section-specific strings.
+```
+common · auth · house · tabs · expenses · categories
+charts · settings · shopping · fixed · fixedTypes · dashboard
+```
 
-Use it like:
+#### 👨‍💻 Usage
+
 ```tsx
 const { t } = useLanguage();
+
 <Text>{t('expenses.addTitle')}</Text>
 <Text>{t('dashboard.greeting', { name: profile.displayName })}</Text>
 ```
 
-The selected language is persisted in AsyncStorage; the next launch picks it up automatically.
+> 💾 The selected language is persisted in AsyncStorage — the next launch picks it up automatically.
 
 ---
 
-## Hooks & Utilities
+## 🪝 Hooks & Utilities
 
-### `hooks/useMonthKey.ts`
-- `getCurrentMonthKey()` → `'yyyy-MM'` for today.
-- `getMonthLabel(monthKey)` → human-readable month name.
-- `getLast12Months()` / `getLast6Months()` → arrays of month keys for the month picker and chart axes.
+### 📅 `hooks/useMonthKey.ts`
+| Function | Purpose |
+| --- | --- |
+| `getCurrentMonthKey()` | Returns `'yyyy-MM'` for today |
+| `getMonthLabel(monthKey)` | Returns human-readable month name |
+| `getLast12Months()` | Array of last 12 month keys (for the month picker) |
+| `getLast6Months()` | Array of last 6 month keys (for chart axes) |
 
-### `utils/navDirection.ts`
-Helper for animated screen transitions (LTR/RTL direction handling).
+### 🧭 `utils/navDirection.ts`
+Helper for animated screen transitions (LTR / RTL direction handling).
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-app/
-  _layout.tsx              # Auth gate + root providers
-  index.tsx                # Redirect entry
-  settings.tsx             # Settings modal
-  (auth)/
-    _layout.tsx
-    login.tsx
-    register.tsx
-    house-setup.tsx
-  (tabs)/
-    _layout.tsx            # AnimatedTabBar wiring
-    index.tsx              # Dashboard
-    expenses.tsx
-    fixed-costs.tsx
-    shopping.tsx
-    charts.tsx
+📁 app/
+   📄 _layout.tsx              # Auth gate + root providers
+   📄 index.tsx                # Redirect entry
+   📄 settings.tsx             # Settings modal
+   📁 (auth)/
+      📄 _layout.tsx
+      📄 login.tsx
+      📄 register.tsx
+      📄 house-setup.tsx
+   📁 (tabs)/
+      📄 _layout.tsx           # AnimatedTabBar wiring
+      📄 index.tsx             # 🏠 Dashboard
+      📄 expenses.tsx          # 💸
+      📄 fixed-costs.tsx       # 📅
+      📄 shopping.tsx          # 🛒
+      📄 charts.tsx            # 📊
 
-components/                # Reusable UI primitives
-context/                   # AuthContext, HouseContext, LanguageContext
-constants/                 # colors.ts, theme.ts
-hooks/                     # useMonthKey.ts
-lib/                       # firebase.ts, i18n.ts
-utils/                     # navDirection.ts
-assets/                    # icons, splash, fonts
+📁 components/                 # Reusable UI primitives
+📁 context/                    # AuthContext, HouseContext, LanguageContext
+📁 constants/                  # colors.ts, theme.ts
+📁 hooks/                      # useMonthKey.ts
+📁 lib/                        # firebase.ts, i18n.ts
+📁 utils/                      # navDirection.ts
+📁 assets/                     # icons, splash, fonts
 
-firestore.rules            # Firestore security rules
-app.json                   # Expo config
+📄 firestore.rules             # Firestore security rules
+📄 app.json                    # Expo config
 ```
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
-- Node.js 18+
-- npm
-- Xcode (for iOS) or Android Studio (for Android)
-- A Firebase project with **Email/Password auth** enabled and **Firestore** in production mode
+### ✅ Prerequisites
+- 🟢 **Node.js** 18+
+- 📦 **npm**
+- 🍏 **Xcode** (iOS) or 🤖 **Android Studio** (Android)
+- 🔥 A **Firebase project** with Email/Password auth enabled and Firestore in production mode
 
-### 1. Install dependencies
+### 1️⃣ Install dependencies
 ```bash
 npm install
 ```
 
-### 2. Configure Firebase
-Edit `lib/firebase.ts` and replace the `firebaseConfig` object with the values from your Firebase Console (Project Settings → Your apps):
+### 2️⃣ Configure Firebase
+Edit `lib/firebase.ts` and replace the `firebaseConfig` object with the values from your Firebase Console *(Project Settings → Your apps)*:
 
 ```ts
 const firebaseConfig = {
@@ -414,43 +482,51 @@ const firebaseConfig = {
 };
 ```
 
-### 3. Deploy Firestore rules
-Copy the contents of `firestore.rules` into your Firebase project's Firestore Rules tab (or deploy via the Firebase CLI: `firebase deploy --only firestore:rules`).
-
-### 4. Run the app
+### 3️⃣ Deploy Firestore rules
+Copy `firestore.rules` into your Firebase project's Firestore Rules tab, or deploy via CLI:
 ```bash
-npm start          # Expo dev server (scan the QR with Expo Go)
-npm run ios        # Build and run on iOS simulator
-npm run android    # Build and run on Android emulator
+firebase deploy --only firestore:rules
 ```
 
-### 5. First-run flow
-1. Register a new account (name + email + password).
-2. Choose "Create a new home" → name it → copy the invite code.
-3. (Optional) On a second device, register another user, choose "Join", paste the code.
-4. Start logging expenses and adding shared shopping items.
+### 4️⃣ Run the app
+```bash
+npm start          # 📱 Expo dev server (scan the QR with Expo Go)
+npm run ios        # 🍏 Build and run on iOS simulator
+npm run android    # 🤖 Build and run on Android emulator
+```
+
+### 5️⃣ First-run flow
+1. 📝 Register a new account (name + email + password)
+2. 🏠 Choose "Create a new home" → name it → copy the invite code
+3. 🤝 *(Optional)* On a second device, register another user, choose "Join", paste the code
+4. 💸 Start logging expenses and adding shared shopping items 🎉
 
 ---
 
-## Scripts
+## 📜 Scripts
 
 | Command | Description |
 | --- | --- |
-| `npm start` | Start the Expo development server |
-| `npm run ios` | Build and launch on the iOS simulator |
-| `npm run android` | Build and launch on the Android emulator |
+| `npm start` | 🚀 Start the Expo development server |
+| `npm run ios` | 🍏 Build and launch on the iOS simulator |
+| `npm run android` | 🤖 Build and launch on the Android emulator |
 
 ---
 
-## Security Rules
+## 🔒 Security Rules
 
 `firestore.rules` enforces:
-- `users/{uid}` — readable/writable only by that user.
-- `houses/{houseId}` and all subcollections — readable/writable only by users whose UID is in the house's `memberIds` array.
-- House membership check is done on every house-scoped read/write, so no cross-house data leakage is possible.
+
+- 👤 **`users/{uid}`** — readable / writable only by that user
+- 🏠 **`houses/{houseId}`** and all subcollections — readable / writable only by users whose UID is in the house's `memberIds` array
+- 🛡️ House membership is checked on every house-scoped read/write — no cross-house data leakage
 
 ---
 
-## License
+<div align="center">
 
-Private project.
+### 📄 License
+
+Private project — built with ❤️ by [@RoyeeB](https://github.com/RoyeeB)
+
+</div>
