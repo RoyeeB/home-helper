@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Home Helper",
+    "slug": "home-helper",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "homehelper",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f18"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.royeeb.homehelper"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f18"
+      },
+      "package": "com.royeeb.homehelper"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

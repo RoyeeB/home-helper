@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can read/write their own profile
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // House access: only members can read/write
+    match /houses/{houseId} {
+      allow read: if request.auth != null && request.auth.uid in resource.data.memberIds;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid in resource.data.memberIds;
+
+      // Expenses: house members only
+      match /expenses/{expenseId} {
+        allow read, write: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/houses/$(houseId)).data.memberIds;
+      }
+
+      // Fixed costs: house members only
+      match /fixedCosts/{fixedCostId} {
+        allow read, write: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/houses/$(houseId)).data.memberIds;
+      }
+
+      // Shopping list: house members only, real-time capable
+      match /shopping/{itemId} {
+        allow read, write: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/houses/$(houseId)).data.memberIds;
+      }
+
+      // House-level settings (budgets, preferences): house members only
+      match /settings/{docId} {
+        allow read, write: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/houses/$(houseId)).data.memberIds;
+      }
+    }
+  }
+}
